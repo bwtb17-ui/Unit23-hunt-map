@@ -1,1 +1,76 @@
 
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wyoming Unit 23 Hunt Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+body{margin:0;font-family:Arial,sans-serif}
+#map{height:75vh}
+.panel{padding:10px}
+button,input{padding:8px;margin:4px}
+</style>
+</head>
+<body>
+<div class="panel">
+<h3>Unit 23 Hunt Map (Beta)</h3>
+<button onclick="locateUser()">Find Me</button>
+<input id="name" placeholder="Waypoint name">
+<button onclick="saveWaypoint()">Save Waypoint</button>
+<button onclick="exportWaypoints()">Export Waypoints</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map').setView([44.5,-105.6],9);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ maxZoom:19,
+ attribution:'© OpenStreetMap'
+}).addTo(map);
+
+let userMarker=null;
+let currentPos=null;
+
+function locateUser(){
+ navigator.geolocation.getCurrentPosition(function(pos){
+   currentPos=[pos.coords.latitude,pos.coords.longitude];
+   if(userMarker) map.removeLayer(userMarker);
+   userMarker=L.marker(currentPos).addTo(map).bindPopup("Your Location");
+   map.setView(currentPos,13);
+ },function(e){alert(e.message);});
+}
+
+function loadWaypoints(){
+ const pts=JSON.parse(localStorage.getItem('unit23wps')||'[]');
+ pts.forEach(p=>{
+   L.marker([p.lat,p.lon]).addTo(map).bindPopup(p.name);
+ });
+}
+
+function saveWaypoint(){
+ if(!currentPos){alert("Get GPS location first."); return;}
+ const name=document.getElementById('name').value||'Waypoint';
+ const pts=JSON.parse(localStorage.getItem('unit23wps')||'[]');
+ pts.push({name:name,lat:currentPos[0],lon:currentPos[1]});
+ localStorage.setItem('unit23wps',JSON.stringify(pts));
+ L.marker(currentPos).addTo(map).bindPopup(name);
+}
+
+function exportWaypoints(){
+ const data=localStorage.getItem('unit23wps')||'[]';
+ const blob=new Blob([data],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='unit23_waypoints.json';
+ a.click();
+}
+
+loadWaypoints();
+</script>
+</body>
+</html>

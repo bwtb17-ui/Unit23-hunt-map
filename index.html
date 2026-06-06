@@ -162,11 +162,31 @@ map.on('click', function(e) {
 
   localStorage.setItem('unit23wps', JSON.stringify(pts));
 
-  L.marker([e.latlng.lat, e.latlng.lng])
+L.marker([p.lat,p.lon]).addTo(map).on('click', function() {
 
-    .addTo(map)
+  let text = p.name;
 
-    .bindPopup(name);
+  if(currentPos){
+
+    const distMeters =
+
+      map.distance(currentPos,[p.lat,p.lon]);
+
+    const distMiles =
+
+      (distMeters / 1609.34).toFixed(2);
+
+    text += '<br>' + distMiles + ' miles away';
+
+  }
+
+  this.bindPopup(text).openPopup();
+
+});
+
+    
+
+    
 
 });
 loadWaypoints();

@@ -142,7 +142,33 @@ function exportWaypoints(){
  a.download='unit23_waypoints.json';
  a.click();
 }
+map.on('click', function(e) {
 
+  const name = prompt("Waypoint name:");
+
+  if(!name) return;
+
+  const pts = JSON.parse(localStorage.getItem('unit23wps') || '[]');
+
+  pts.push({
+
+    name: name,
+
+    lat: e.latlng.lat,
+
+    lon: e.latlng.lng
+
+  });
+
+  localStorage.setItem('unit23wps', JSON.stringify(pts));
+
+  L.marker([e.latlng.lat, e.latlng.lng])
+
+    .addTo(map)
+
+    .bindPopup(name);
+
+});
 loadWaypoints();
 </script>
 </body>

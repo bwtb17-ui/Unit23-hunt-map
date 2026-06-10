@@ -156,7 +156,9 @@ function loadWaypoints(){
 
   }
 
-  this.bindPopup(text);
+  this.unbindPopup();
+
+this.bindPopup(text);
 
 this.openPopup();
 

@@ -68,25 +68,29 @@ L.control.layers(
 
 ).addTo(map); 
   
-
-
-
-const unit23Boundary = L.polygon([
-
-  [44.4, -105.9],
-
-  [44.8, -105.9],
-
-  [44.8, -105.4]
-
-], {
-
-  color: 'red'
-
-}).addTo(map);
   
 
-  
+  fetch('AntelopeHuntAreas_-6737330874868979965.geojson')
+
+  .then(response => response.json())
+
+  .then(data => {
+
+    L.geoJSON(data, {
+
+      style: {
+
+        color: 'red',
+
+        weight: 3,
+
+        fill: false
+
+      }
+
+    }).addTo(map);
+
+  });
 
 
   

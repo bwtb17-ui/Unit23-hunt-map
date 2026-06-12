@@ -273,6 +273,22 @@ L.marker([p.lat,p.lon]).addTo(map).on('click', function() {
     
 
 });
+
+  function deleteWaypoint(lat, lon) {
+
+  let pts = JSON.parse(localStorage.getItem('unit23wps') || '[]');
+
+  pts = pts.filter(p => {
+
+    return !(Math.abs(p.lat - lat) < 0.000001 && Math.abs(p.lon - lon) < 0.000001);
+
+  });
+
+  localStorage.setItem('unit23wps', JSON.stringify(pts));
+
+  location.reload();
+
+}
 loadWaypoints();
   loadUnit23Boundary();
 </script>

@@ -136,7 +136,15 @@ function loadPublicLand() {
 
           fillOpacity: 0.25
 
-        }
+        } 
+
+        ,
+
+onEachFeature: function(feature, layer) {
+
+  layer.bindPopup(JSON.stringify(feature.properties));
+
+}
 
       }).addTo(map);
 

@@ -118,7 +118,7 @@ L.control.layers(
 
 function loadPublicLand() {
 
-  fetch('https://gis.blm.gov/wyarcgis/rest/services/Lands/BLM_WY_Surface_Management_Agency/FeatureServer/0/query?where=1%3D1&outFields=*&geometry=-106.2,44.0,-105.2,45.0&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson')
+  fetch('https://gis.blm.gov/wyarcgis/rest/services/Lands/BLM_WY_Surface_Management_Agency/FeatureServer/0/query?where=ADMIN_AGENCY%20LIKE%20%27%25BUREAU%20OF%20LAND%20MANAGEMENT%25%27&outFields=*&geometry=-106.2,44.0,-105.2,45.0&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson')
 
     .then(response => response.json())
 

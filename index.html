@@ -182,6 +182,8 @@ function loadWaypoints(){
 
   this.unbindPopup();
 
+text += '<br><button onclick="deleteWaypoint(' + p.lat + ',' + p.lon + ')">Delete</button>';
+
 this.bindPopup(text);
 
 this.openPopup();

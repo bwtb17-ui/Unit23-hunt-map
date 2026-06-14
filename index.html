@@ -126,17 +126,43 @@ function loadPublicLand() {
 
       L.geoJSON(data, {
 
-        style: {
+        style: function(feature) {
 
-          color: 'yellow',
+  const p = JSON.stringify(feature.properties).toUpperCase();
 
-          weight: 1,
+  if (p.includes('BUREAU OF LAND MANAGEMENT')) {
 
-          fillColor: 'yellow',
+    return { color:'orange', weight:1, fillColor:'orange', fillOpacity:0.45 };
 
-          fillOpacity: 0.20
+  }
 
-        }
+  if (p.includes('STATE')) {
+
+    return { color:'blue', weight:1, fillColor:'blue', fillOpacity:0.35 };
+
+  }
+
+  if (p.includes('FOREST SERVICE')) {
+
+    return { color:'green', weight:1, fillColor:'green', fillOpacity:0.35 };
+
+  }
+
+  if (p.includes('FISH') || p.includes('WILDLIFE')) {
+
+    return { color:'teal', weight:1, fillColor:'teal', fillOpacity:0.35 };
+
+  }
+
+  if (p.includes('PRIVATE')) {
+
+    return { color:'white', weight:0, fillOpacity:0 };
+
+  }
+
+  return { color:'gray', weight:1, fillColor:'gray', fillOpacity:0.15 };
+
+}
 
       }).addTo(map);
 

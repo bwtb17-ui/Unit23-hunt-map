@@ -168,7 +168,13 @@ function loadPublicLand() {
 
       }).addTo(map);
 
-    })
+    }).  ,
+
+onEachFeature: function(feature, layer) {
+
+  layer.bindPopup(JSON.stringify(feature.properties));
+
+}
 
     .catch(error => {
 
@@ -292,7 +298,7 @@ function exportWaypoints(){
  a.download='unit23_waypoints.json';
  a.click();
 }  
-map.on('click', function(e) {
+/* map.on('click', function(e) {
 
   const name = prompt("Waypoint name:");
 
@@ -308,7 +314,7 @@ map.on('click', function(e) {
 
     lon: e.latlng.lng
 
-  }); 
+  }); */
 
   localStorage.setItem('unit23wps', JSON.stringify(pts));
 

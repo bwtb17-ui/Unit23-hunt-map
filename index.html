@@ -126,55 +126,53 @@ function loadPublicLand() {
 
       L.geoJSON(data, {
 
-  style: function(feature) {
+        style: function(feature) {
 
-    const p = JSON.stringify(feature.properties).toUpperCase();
+          const p = JSON.stringify(feature.properties).toUpperCase();
 
-    if (p.includes('PRIVATE')) {
+          if (p.includes('PRIVATE')) {
 
-      return { color:'white', weight:0, fillOpacity:0 };
+            return { color:'white', weight:0, fillOpacity:0 };
 
-    }
+          }
 
-    if (p.includes('BUREAU OF LAND MANAGEMENT')) {
+          if (p.includes('BUREAU OF LAND MANAGEMENT')) {
 
-      return { color:'orange', weight:1, fillColor:'orange', fillOpacity:0.45 };
+            return { color:'orange', weight:1, fillColor:'orange', fillOpacity:0.45 };
 
-    }
+          }
 
-    if (p.includes('FOREST SERVICE')) {
+          if (p.includes('FOREST SERVICE')) {
 
-      return { color:'green', weight:1, fillColor:'green', fillOpacity:0.35 };
+            return { color:'green', weight:1, fillColor:'green', fillOpacity:0.35 };
 
-    }
+          }
 
-    if (p.includes('FISH') || p.includes('WILDLIFE')) {
+          if (p.includes('FISH') || p.includes('WILDLIFE')) {
 
-      return { color:'teal', weight:1, fillColor:'teal', fillOpacity:0.35 };
+            return { color:'teal', weight:1, fillColor:'teal', fillOpacity:0.35 };
 
-    }
+          }
 
-    if (p.includes('"STATE"') || p.includes('STATE OF WYOMING')) {
+          if (p.includes('"STATE"') || p.includes('STATE OF WYOMING')) {
 
-      return { color:'blue', weight:1, fillColor:'blue', fillOpacity:0.35 };
+            return { color:'blue', weight:1, fillColor:'blue', fillOpacity:0.35 };
 
-    }
+          }
 
-    return { color:'white', weight:0, fillOpacity:0 };
+          return { color:'white', weight:0, fillOpacity:0 };
 
-  }
+        },
 
-  // something may continue here...
+        onEachFeature: function(feature, layer) {
+
+          layer.bindPopup(JSON.stringify(feature.properties));
+
+        }
 
       }).addTo(map);
 
-    }).  ,
-
-onEachFeature: function(feature, layer) {
-
-  layer.bindPopup(JSON.stringify(feature.properties));
-
-}
+    })
 
     .catch(error => {
 

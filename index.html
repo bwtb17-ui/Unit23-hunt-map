@@ -296,23 +296,41 @@ function exportWaypoints(){
  a.download='unit23_waypoints.json';
  a.click();
 }  
- map.on('click', function(e) {
+ let pressTimer = null;
 
-  const name = prompt("Waypoint name:");
+map.on('mousedown touchstart', function(e) {
 
-  if(!name) return;
+  pressTimer = setTimeout(function() {
 
-  const pts = JSON.parse(localStorage.getItem('unit23wps') || '[]');
+    const name = prompt("Waypoint name:");
 
-  pts.push({
+    if(!name) return;
 
-    name: name,
+    const pts = JSON.parse(localStorage.getItem('unit23wps') || '[]');
 
-    lat: e.latlng.lat,
+    pts.push({
 
-    lon: e.latlng.lng
+      name: name,
 
-  }); 
+      lat: e.latlng.lat,
+
+      lon: e.latlng.lng
+
+    });
+
+    localStorage.setItem('unit23wps', JSON.stringify(pts));
+
+    location.reload();
+
+  }, 800);
+
+});
+
+map.on('mouseup touchend move', function(e) {
+
+  clearTimeout(pressTimer);
+
+});
   
 
   localStorage.setItem('unit23wps', JSON.stringify(pts));

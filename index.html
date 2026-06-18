@@ -174,12 +174,6 @@ function loadPublicLand() {
 
           return { color:'white', weight:0, fillOpacity:0 };
 
-        },
-
-        onEachFeature: function(feature, layer) {
-
-          layer.bindPopup(JSON.stringify(feature.properties));
-
         }
 
       }).addTo(map);

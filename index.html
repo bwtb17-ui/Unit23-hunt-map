@@ -292,17 +292,6 @@ function exportWaypoints(){
 }  
  
 
-  localStorage.setItem('unit23wps', JSON.stringify(pts));
-
-  location.reload();
-
-});
-
-map.on('mouseup touchend move', function(e) {
-
-  clearTimeout(pressTimer);
-
-});
   
   function deleteWaypoint(lat, lon) {
 

@@ -223,8 +223,8 @@ function locateUser(){
 function loadWaypoints(){
  const pts=JSON.parse(localStorage.getItem('unit23wps')||'[]');
  pts.forEach(p=>{
-   L.marker([p.lat,p.lon]).addTo(map).on('click', function() {
-
+   L.marker([p.lat,p.lon]).addTo(map).on('click', function(evevt) {
+L.DomEvent.stopPropagation(event);
   let text = p.name;
 
   if(currentPos){

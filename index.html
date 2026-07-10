@@ -306,7 +306,42 @@ function exportWaypoints(){
 
   location.reload();
 
-}
+} 
+
+map.on('click', function(e) {
+
+  const name = prompt('Waypoint name:');
+
+  if (!name) return;
+
+  const pts = JSON.parse(
+
+    localStorage.getItem('unit23wps') || '[]'
+
+  );
+
+  pts.push({
+
+    name: name,
+
+    lat: e.latlng.lat,
+
+    lon: e.latlng.lng
+
+  });
+
+  localStorage.setItem(
+
+    'unit23wps',
+
+    JSON.stringify(pts)
+
+  );
+
+  location.reload();
+
+});
+  
 loadWaypoints();
 loadPublicLand();
 loadUnit23Boundary();

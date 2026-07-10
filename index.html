@@ -80,7 +80,7 @@ L.control.layers(
     .then(data => {
 
       const unit23Layer = L.geoJSON(data, {
-       interactive: false 
+       interactive: false, 
         filter: function(feature) {
           return feature.properties.HUNTAREA == 23;
 

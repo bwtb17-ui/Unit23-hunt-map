@@ -80,9 +80,8 @@ L.control.layers(
     .then(data => {
 
       const unit23Layer = L.geoJSON(data, {
-
+       interactive: false 
         filter: function(feature) {
-
           return feature.properties.HUNTAREA == 23;
 
         },
@@ -121,7 +120,7 @@ function loadPublicLand() {
     .then(data => {
 
       L.geoJSON(data, {
-
+interactive: false,
         style: function(feature) {
 
           const p = JSON.stringify(feature.properties).toUpperCase();
@@ -309,7 +308,7 @@ function exportWaypoints(){
 
 }
 loadWaypoints();
-// loadPublicLand();
+loadPublicLand();
 loadUnit23Boundary();
 </script>
 </body>

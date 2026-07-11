@@ -1,54 +1,114 @@
-
-
 <!DOCTYPE html>
+
 <html>
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wyoming Unit 23 Hunt Map</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<style>
-body{margin:0;font-family:Arial,sans-serif}
-#map{height:75vh}
-.panel{padding:10px}
-button,input{padding:8px;margin:4px}
-</style>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Wyoming Unit 23 Hunt Map</title>
+
+  <link
+
+    rel="stylesheet"
+
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+
+  />
+
+  <style>
+
+    body {
+
+      margin: 0;
+
+      font-family: Arial, sans-serif;
+
+    }
+
+    #map {
+
+      height: 75vh;
+
+    }
+
+    .panel {
+
+      padding: 10px;
+
+    }
+
+    button,
+
+    input {
+
+      padding: 8px;
+
+      margin: 4px;
+
+    }
+
+  </style>
+
 </head>
+
 <body>
+
 <div class="panel">
-<h3>Unit 23 Hunt Map (Beta)</h3>
-<button onclick="locateUser()">Find Me</button>
-<input id="name" placeholder="Waypoint name">
-<button onclick="saveWaypoint()">Save Waypoint</button>
-<button onclick="exportWaypoints()">Export Waypoints</button>
+
+  <h3>Unit 23 Hunt Map</h3>
+
+  <button onclick="locateUser()">Find Me</button>
+
+  <input
+
+    id="name"
+
+    placeholder="Waypoint name"
+
+  >
+
+  <button onclick="saveWaypoint()">Save Waypoint</button>
+
+  <button onclick="exportWaypoints()">Export Waypoints</button>
+
 </div>
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-const map=L.map('map').setView([44.5,-105.6],9);
 
-const streetLayer=L.tileLayer(
+<script>
+
+const map = L.map('map').setView([44.5, -105.6], 9);
+
+/* --------------------
+
+   BASE MAPS
+
+-------------------- */
+
+const streetLayer = L.tileLayer(
 
   'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 
   {
 
-    maxZoom:19,
+    maxZoom: 19,
 
-    attribution:'© OpenStreetMap'
+    attribution: '© OpenStreetMap'
 
   }
 
 );
 
-const satelliteLayer=L.tileLayer(
+const satelliteLayer = L.tileLayer(
 
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 
   {
 
-    attribution:'© Esri'
+    attribution: '© Esri'
 
   }
 
@@ -56,295 +116,628 @@ const satelliteLayer=L.tileLayer(
 
 streetLayer.addTo(map);
 
-L.control.layers(
+/* --------------------
 
-  {
+   OVERLAY LAYERS
 
-    "Street":streetLayer,
+-------------------- */
 
-    "Satellite":satelliteLayer
+const publicLandLayer = L.layerGroup();
 
-  }
+const unit23Layer = L.layerGroup();
 
-).addTo(map); 
-  
-  
+const waypointLayer = L.layerGroup();
 
+waypointLayer.addTo(map);
 
-  function loadUnit23Boundary() {
+/* --------------------
+
+   LAYER CONTROL
+
+-------------------- */
+
+const baseMaps = {
+
+  "Street": streetLayer,
+
+  "Satellite": satelliteLayer
+
+};
+
+const overlays = {
+
+  "Public Land": publicLandLayer,
+
+  "Unit 23 Boundary": unit23Layer,
+
+  "Waypoints": waypointLayer
+
+};
+
+L.control.layers(baseMaps, overlays).addTo(map);
+
+/* --------------------
+
+   UNIT 23 BOUNDARY
+
+-------------------- */
+
+function loadUnit23Boundary() {
 
   fetch('AntelopeHuntAreas_-6737330874868979965.geojson')
 
-    .then(response => response.json())
+    .then(response => {
+
+      if (!response.ok) {
+
+        throw new Error('Unit 23 boundary file could not be loaded.');
+
+      }
+
+      return response.json();
+
+    })
 
     .then(data => {
 
-      const unit23Layer = L.geoJSON(data, {
-       interactive: false, 
+      const boundary = L.geoJSON(data, {
+
+        interactive: false,
+
         filter: function(feature) {
-          return feature.properties.HUNTAREA == 23;
+
+          return Number(feature.properties.HUNTAREA) === 23;
 
         },
 
         style: {
 
-  color: 'red',
+          color: 'red',
 
-  weight: 4,
+          weight: 4,
 
-  fillColor: '#dddddd',
+          fillColor: '#dddddd',
 
-  fillOpacity: 0.10
-       
-}
+          fillOpacity: 0.10
+
+        }
 
       });
 
+      boundary.addTo(unit23Layer);
+
       unit23Layer.addTo(map);
 
-      map.fitBounds(unit23Layer.getBounds());
+      const bounds = boundary.getBounds();
 
-    
+      if (bounds.isValid()) {
+
+        map.fitBounds(bounds);
+
+      }
+
+    })
+
+    .catch(error => {
+
+      console.error(error);
 
     });
 
 }
 
+/* --------------------
+
+   PUBLIC LAND
+
+-------------------- */
 
 function loadPublicLand() {
 
   fetch('blm-unit23.geojson')
 
-    .then(response => response.json())
+    .then(response => {
+
+      if (!response.ok) {
+
+        throw new Error('Public land file could not be loaded.');
+
+      }
+
+      return response.json();
+
+    })
 
     .then(data => {
 
-      L.geoJSON(data, {
-interactive: false,
+      const land = L.geoJSON(data, {
+
+        interactive: false,
+
         style: function(feature) {
 
-          const p = JSON.stringify(feature.properties).toUpperCase();
+          const properties =
 
-          if (p.includes('PRIVATE')) {
+            JSON.stringify(feature.properties || {}).toUpperCase();
+
+          if (properties.includes('PRIVATE')) {
+
+            return {
+
+              color: '#999999',
+
+              weight: 1,
+
+              fillColor: '#dddddd',
+
+              fillOpacity: 0.25
+
+            };
+
+          }
+
+          if (properties.includes('BUREAU OF LAND MANAGEMENT')) {
+
+            return {
+
+              color: 'orange',
+
+              weight: 1,
+
+              fillColor: 'orange',
+
+              fillOpacity: 0.45
+
+            };
+
+          }
+
+          if (properties.includes('FOREST SERVICE')) {
+
+            return {
+
+              color: 'green',
+
+              weight: 1,
+
+              fillColor: 'green',
+
+              fillOpacity: 0.35
+
+            };
+
+          }
+
+          if (
+
+            properties.includes('FISH') ||
+
+            properties.includes('WILDLIFE')
+
+          ) {
+
+            return {
+
+              color: 'teal',
+
+              weight: 1,
+
+              fillColor: 'teal',
+
+              fillOpacity: 0.35
+
+            };
+
+          }
+
+          if (
+
+            properties.includes('"STATE"') ||
+
+            properties.includes('STATE OF WYOMING')
+
+          ) {
+
+            return {
+
+              color: 'blue',
+
+              weight: 1,
+
+              fillColor: 'blue',
+
+              fillOpacity: 0.35
+
+            };
+
+          }
 
           return {
 
-  color:'#999999',
+            color: 'white',
 
-  weight:1,
+            weight: 0,
 
-  fillColor:'#dddddd',
+            fillOpacity: 0
 
-  fillOpacity:0.25
-
-};
-
-          }
-
-          if (p.includes('BUREAU OF LAND MANAGEMENT')) {
-
-            return { color:'orange', weight:1, fillColor:'orange', fillOpacity:0.45 };
-
-          }
-
-          if (p.includes('FOREST SERVICE')) {
-
-            return { color:'green', weight:1, fillColor:'green', fillOpacity:0.35 };
-
-          }
-
-          if (p.includes('FISH') || p.includes('WILDLIFE')) {
-
-            return { color:'teal', weight:1, fillColor:'teal', fillOpacity:0.35 };
-
-          }
-
-          if (p.includes('"STATE"') || p.includes('STATE OF WYOMING')) {
-
-            return { color:'blue', weight:1, fillColor:'blue', fillOpacity:0.35 };
-
-          }
-
-          return { color:'white', weight:0, fillOpacity:0 };
+          };
 
         }
 
-      }).addTo(map);
+      });
+
+      land.addTo(publicLandLayer);
+
+      publicLandLayer.addTo(map);
+
+    })
+
+    .catch(error => {
+
+      console.error(error);
 
     });
 
 }
 
-        
+/* --------------------
 
-  
+   GPS LOCATION
 
+-------------------- */
 
-  
+let userMarker = null;
 
-  
+let currentPos = null;
 
-    
+function locateUser() {
 
-  
+  if (!navigator.geolocation) {
 
+    alert('Location services are not supported by this browser.');
 
-
-
-
-
-
-  
-
-    
-
-    
-
-  
-
-
-
- 
- 
-
-
-let userMarker=null;
-let currentPos=null;
-
-function locateUser(){
- navigator.geolocation.getCurrentPosition(function(pos){
-   currentPos=[pos.coords.latitude,pos.coords.longitude];
-   if(userMarker) map.removeLayer(userMarker);
-   userMarker=L.marker(currentPos).addTo(map).bindPopup("Your Location");
-   map.setView(currentPos,13);
- },function(e){alert(e.message);});
-}
-
-function loadWaypoints(){
- const pts=JSON.parse(localStorage.getItem('unit23wps')||'[]');
- pts.forEach(p=>{
-   L.marker([p.lat,p.lon]).addTo(map).on('click', function(event) {
-L.DomEvent.stopPropagation(event);
-  let text = p.name;
-
-  if(currentPos){
-
-    const distMeters =
-
-      map.distance(currentPos,[p.lat,p.lon]);
-
-    const distMiles =
-
-      (distMeters / 1609.34).toFixed(2);
-
-    text += '<br>' + distMiles + ' miles away';
+    return;
 
   }
 
-  this.unbindPopup();
+  navigator.geolocation.getCurrentPosition(
 
-text += '<br><button onclick="deleteWaypoint(' + p.lat + ',' + p.lon + ')">Delete</button>';
+    function(position) {
 
-this.bindPopup(text);
+      currentPos = [
 
-this.openPopup();
+        position.coords.latitude,
 
-});
-}); 
-}
+        position.coords.longitude
 
-function saveWaypoint(){
- if(!currentPos){alert("Get GPS location first."); return;}
- const name=document.getElementById('name').value||'Waypoint';
- const pts=JSON.parse(localStorage.getItem('unit23wps')||'[]');
- pts.push({name:name,lat:currentPos[0],lon:currentPos[1]});
- localStorage.setItem('unit23wps',JSON.stringify(pts));L.marker(currentPos).addTo(map).on('click', function() {
+      ];
 
-  let text = name;
+      if (userMarker) {
 
-  if(currentPos){
+        map.removeLayer(userMarker);
 
-    const distMeters =
+      }
 
-      map.distance(currentPos,currentPos);
+      userMarker = L.marker(currentPos)
 
-    const distMiles =
+        .addTo(map)
 
-      (distMeters / 1609.34).toFixed(2);
+        .bindPopup('Your Location');
 
-    text += '<br>' + distMiles + ' miles away';
+      map.setView(currentPos, 13);
 
-  }
+    },
 
-  this.bindPopup(text).openPopup();
+    function(error) {
 
-});
-}
+      alert(error.message);
 
-function exportWaypoints(){
- const data=localStorage.getItem('unit23wps')||'[]';
- const blob=new Blob([data],{type:'application/json'});
- const a=document.createElement('a');
- a.href=URL.createObjectURL(blob);
- a.download='unit23_waypoints.json';
- a.click();
-}  
- 
+    },
 
-  
-  function deleteWaypoint(lat, lon) {
+    {
 
-  let pts = JSON.parse(localStorage.getItem('unit23wps') || '[]');
+      enableHighAccuracy: true,
 
-  pts = pts.filter(p => {
+      timeout: 15000
 
-    return !(Math.abs(p.lat - lat) < 0.000001 && Math.abs(p.lon - lon) < 0.000001);
-
-  });
-
-  localStorage.setItem('unit23wps', JSON.stringify(pts));
-
-  location.reload();
-
-} 
-
-map.on('click', function(e) {
-
-  const name = prompt('Waypoint name:');
-
-  if (!name) return;
-
-  const pts = JSON.parse(
-
-    localStorage.getItem('unit23wps') || '[]'
+    }
 
   );
 
-  pts.push({
+}
 
-    name: name,
+/* --------------------
 
-    lat: e.latlng.lat,
+   WAYPOINT STORAGE
 
-    lon: e.latlng.lng
+-------------------- */
 
-  });
+function getWaypoints() {
+
+  try {
+
+    return JSON.parse(
+
+      localStorage.getItem('unit23wps') || '[]'
+
+    );
+
+  } catch (error) {
+
+    console.error('Waypoint data could not be read.', error);
+
+    return [];
+
+  }
+
+}
+
+function storeWaypoints(waypoints) {
 
   localStorage.setItem(
 
     'unit23wps',
 
-    JSON.stringify(pts)
+    JSON.stringify(waypoints)
 
   );
 
-  location.reload();
+}
+
+/* --------------------
+
+   WAYPOINT MARKERS
+
+-------------------- */
+
+function createWaypointMarker(waypoint) {
+
+  const marker = L.marker([
+
+    waypoint.lat,
+
+    waypoint.lon
+
+  ]);
+
+  marker.on('click', function(event) {
+
+    L.DomEvent.stopPropagation(event);
+
+    let popupText = waypoint.name;
+
+    if (currentPos) {
+
+      const distanceMeters = map.distance(
+
+        currentPos,
+
+        [waypoint.lat, waypoint.lon]
+
+      );
+
+      const distanceMiles =
+
+        (distanceMeters / 1609.34).toFixed(2);
+
+      popupText +=
+
+        '<br>' +
+
+        distanceMiles +
+
+        ' miles away';
+
+    }
+
+    popupText +=
+
+      '<br><button onclick="deleteWaypoint(' +
+
+      waypoint.lat +
+
+      ',' +
+
+      waypoint.lon +
+
+      ')">Delete</button>';
+
+    marker
+
+      .bindPopup(popupText)
+
+      .openPopup();
+
+  });
+
+  marker.addTo(waypointLayer);
+
+}
+
+function loadWaypoints() {
+
+  waypointLayer.clearLayers();
+
+  const waypoints = getWaypoints();
+
+  waypoints.forEach(function(waypoint) {
+
+    createWaypointMarker(waypoint);
+
+  });
+
+}
+
+/* --------------------
+
+   SAVE GPS WAYPOINT
+
+-------------------- */
+
+function saveWaypoint() {
+
+  if (!currentPos) {
+
+    alert('Tap Find Me first.');
+
+    return;
+
+  }
+
+  const nameInput =
+
+    document.getElementById('name');
+
+  const waypointName =
+
+    nameInput.value.trim() || 'Waypoint';
+
+  const waypoints = getWaypoints();
+
+  const waypoint = {
+
+    name: waypointName,
+
+    lat: currentPos[0],
+
+    lon: currentPos[1]
+
+  };
+
+  waypoints.push(waypoint);
+
+  storeWaypoints(waypoints);
+
+  createWaypointMarker(waypoint);
+
+  nameInput.value = '';
+
+}
+
+/* --------------------
+
+   TAP MAP TO SAVE
+
+-------------------- */
+
+map.on('click', function(event) {
+
+  const waypointName =
+
+    prompt('Waypoint name:');
+
+  if (!waypointName) {
+
+    return;
+
+  }
+
+  const waypoints = getWaypoints();
+
+  const waypoint = {
+
+    name: waypointName,
+
+    lat: event.latlng.lat,
+
+    lon: event.latlng.lng
+
+  };
+
+  waypoints.push(waypoint);
+
+  storeWaypoints(waypoints);
+
+  createWaypointMarker(waypoint);
 
 });
-  
+
+/* --------------------
+
+   DELETE WAYPOINT
+
+-------------------- */
+
+function deleteWaypoint(lat, lon) {
+
+  let waypoints = getWaypoints();
+
+  waypoints = waypoints.filter(function(waypoint) {
+
+    const sameLatitude =
+
+      Math.abs(waypoint.lat - lat) < 0.000001;
+
+    const sameLongitude =
+
+      Math.abs(waypoint.lon - lon) < 0.000001;
+
+    return !(sameLatitude && sameLongitude);
+
+  });
+
+  storeWaypoints(waypoints);
+
+  map.closePopup();
+
+  loadWaypoints();
+
+}
+
+/* --------------------
+
+   EXPORT WAYPOINTS
+
+-------------------- */
+
+function exportWaypoints() {
+
+  const waypoints = getWaypoints();
+
+  const blob = new Blob(
+
+    [JSON.stringify(waypoints, null, 2)],
+
+    {
+
+      type: 'application/json'
+
+    }
+
+  );
+
+  const link =
+
+    document.createElement('a');
+
+  link.href =
+
+    URL.createObjectURL(blob);
+
+  link.download =
+
+    'unit23_waypoints.json';
+
+  link.click();
+
+  URL.revokeObjectURL(link.href);
+
+}
+
+/* --------------------
+
+   START MAP
+
+-------------------- */
+
 loadWaypoints();
+
 loadPublicLand();
+
 loadUnit23Boundary();
+
 </script>
+
 </body>
+
 </html>

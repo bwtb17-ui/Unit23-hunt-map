@@ -18,35 +18,145 @@
 
   <style>
 
-    body {
+  * {
 
-      margin: 0;
+    box-sizing: border-box;
 
-      font-family: Arial, sans-serif;
+  }
 
-    }
+  body {
 
-    #map {
+    margin: 0;
 
-      height: 75vh;
+    font-family: Arial, sans-serif;
+
+    background: #17170f;
+
+  }
+
+  .header-image {
+
+    display: block;
+
+    width: 100%;
+
+    height: auto;
+
+  }
+
+  .panel {
+
+    padding: 10px;
+
+    background: linear-gradient(#24251b, #15160f);
+
+    border-top: 1px solid #9b6b27;
+
+    border-bottom: 1px solid #9b6b27;
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 6px;
+
+  }
+
+  .panel button,
+
+  .panel input,
+
+  .panel select {
+
+    min-height: 44px;
+
+    padding: 9px 12px;
+
+    margin: 0;
+
+    border: 1px solid #9b6b27;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+
+  }
+
+  .panel button {
+
+    color: #f5f0df;
+
+    background: #202119;
+
+    font-weight: bold;
+
+  }
+
+  .panel button:active {
+
+    background: #49641d;
+
+  }
+
+  .panel input {
+
+    flex: 1;
+
+    min-width: 145px;
+
+    color: white;
+
+    background: #10110d;
+
+  }
+
+  .panel input::placeholder {
+
+    color: #aaa;
+
+  }
+
+  #map {
+
+    height: 75vh;
+
+  }
+
+  @media (max-width: 600px) {
+
+    .header-image {
+
+      min-height: 150px;
+
+      object-fit: cover;
+
+      object-position: center;
 
     }
 
     .panel {
 
-      padding: 10px;
-
-    }
-
-    button,
-
-    input {
-
       padding: 8px;
 
-      margin: 4px;
+    }
+
+    .panel button,
+
+    .panel input {
+
+      font-size: 15px;
 
     }
+
+    #map {
+
+      height: 70vh;
+
+    }
+
+  }
 
   </style>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -54,11 +164,19 @@
 
 <body>
 
+<img
+
+  class="header-image"
+
+  src="23A22A93-F9CA-4474-A5C8-5A8171602DFE.png"
+
+  alt="Wyoming Hunt Map Unit 23"
+
+>
+
 <div class="panel">
 
-  <h3>Unit 23 Hunt Map</h3>
-
-  <button onclick="locateUser()">Find Me</button>
+  <button onclick="locateUser()">⌖ Find Me</button>
 
   <input
 
@@ -68,9 +186,9 @@
 
   >
 
-  <button onclick="saveWaypoint()">Save Waypoint</button>
+  <button onclick="saveWaypoint()">＋ Save Waypoint</button>
 
-  <button onclick="exportWaypoints()">Export Waypoints</button>
+  <button onclick="exportWaypoints()">⇧ Export</button>
 
 </div>
 

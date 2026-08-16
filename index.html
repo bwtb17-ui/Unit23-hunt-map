@@ -610,71 +610,67 @@ function storeWaypoints(waypoints) {
 
 function createWaypointMarker(waypoint) {
 
-  const marker = L.marker([
+    const marker = L.marker([
 
-    waypoint.lat,
+        waypoint.lat,
 
-    waypoint.lon
+        waypoint.lon
 
-  ]);
+    ]);
 
-  marker.on('click', function(event) {
+    function buildPopupText() {
 
-    
+        let popupText = waypoint.name;
 
-    let popupText = waypoint.name;
+        if (currentPos) {
 
-    if (currentPos) {
+            const distanceMeters = map.distance(
 
-      const distanceMeters = map.distance(
+                currentPos,
 
-        currentPos,
+                [waypoint.lat, waypoint.lon]
 
-        [waypoint.lat, waypoint.lon]
+            );
 
-      );
+            const distanceMiles =
 
-      const distanceMiles =
+                (distanceMeters / 1609.34).toFixed(2);
 
-        (distanceMeters / 1609.34).toFixed(2);
+            popupText +=
 
-      popupText +=
+                '<br>' +
 
-        '<br>' +
+                distanceMiles +
 
-        distanceMiles +
+                ' miles away';
 
-        ' miles away';
+        }
+
+        popupText +=
+
+            '<br><button onclick="deleteWaypoint(' +
+
+            waypoint.lat +
+
+            ',' +
+
+            waypoint.lon +
+
+            ')">Delete</button>';
+
+        return popupText;
 
     }
 
-    popupText +=
+    marker.bindPopup(buildPopupText());
 
-      '<br><button onclick="deleteWaypoint(' +
+    marker.on('popupopen', function() {
 
-      waypoint.lat +
+        marker.setPopupContent(buildPopupText());
 
-      ',' +
+    });
 
-      waypoint.lon +
-
-      ')">Delete</button>';
-
-    if (marker.getPopup()) {
-
-    marker.setPopupContent(popupText);
-
-} else {
-
-    marker.bindPopup(popupText);
-
-}
-
-marker.openPopup();
-
-  });
-
-  marker.addTo(waypointLayer);
+    marker.addTo(waypointLayer);
 
 }
 

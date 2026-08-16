@@ -620,7 +620,7 @@ function createWaypointMarker(waypoint) {
 
   marker.on('click', function(event) {
 
-    L.DomEvent.stopPropagation(event);
+    
 
     let popupText = waypoint.name;
 
@@ -660,11 +660,17 @@ function createWaypointMarker(waypoint) {
 
       ')">Delete</button>';
 
-    marker
+    if (marker.getPopup()) {
 
-      .bindPopup(popupText)
+    marker.setPopupContent(popupText);
 
-      .openPopup();
+} else {
+
+    marker.bindPopup(popupText);
+
+}
+
+marker.openPopup();
 
   });
 

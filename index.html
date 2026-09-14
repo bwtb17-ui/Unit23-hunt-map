@@ -501,6 +501,76 @@ function loadPublicLand() {
     });
 
 }
+function loadCountyRoads() {
+
+    fetch('county_roads_unit23.geojson')
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error('County roads file could not be loaded');
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            L.geoJSON(data, {
+
+                style: function(feature) {
+
+                    return {
+
+                        color: '#ffcc00',
+
+                        weight: 3,
+
+                        opacity: 0.9
+
+                    };
+
+                },
+
+                onEachFeature: function(feature, layer) {
+
+                    const p = feature.properties || {};
+
+                    const roadName =
+
+                        p.LABEL1 ||
+
+                        p.ROAD_NO ||
+
+                        p.ROUTE ||
+
+                        'County Road';
+
+                    layer.bindPopup(
+
+                        '<b>' + roadName + '</b>' +
+
+                        (p.COUNTY ? '<br>' + p.COUNTY + ' County' : '')
+
+                    );
+
+                }
+
+            }).addTo(countyRoadLayer);
+
+        })
+
+        .catch(error => {
+
+            console.log('County roads error:', error);
+
+        });
+
+}
+
 
 /* --------------------
 

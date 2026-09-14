@@ -1,4 +1,4 @@
-const APP_CACHE = 'unit23-app-v3';
+const APP_CACHE = 'unit23-app-v4';
 
 const TILE_CACHE = 'unit23-osm-tiles-v1';
 

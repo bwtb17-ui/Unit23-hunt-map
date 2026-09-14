@@ -1,4 +1,4 @@
-const APP_CACHE = 'unit23-app-v2';
+const APP_CACHE = 'unit23-app-v3';
 
 const TILE_CACHE = 'unit23-osm-tiles-v1';
 
@@ -9,6 +9,8 @@ const APP_FILES = [
   './index.html',
 
   './blm_unit23.geojson',
+
+  './county_roads.geojson',
 
   './blm-unit23.geojson',
 

@@ -584,59 +584,77 @@ let currentPos = null;
 
 function locateUser() {
 
-  if (!navigator.geolocation) {
+    if (!navigator.geolocation) {
 
-    alert('Location services are not supported by this browser.');
+        alert('GPS location is not supported on this device.');
 
-    return;
-
-  }
-
-  navigator.geolocation.getCurrentPosition(
-
-    function(position) {
-
-      currentPos = [
-
-        position.coords.latitude,
-
-        position.coords.longitude
-
-      ];
-
-      if (userMarker) {
-
-        map.removeLayer(userMarker);
-
-      }
-
-      userMarker = L.marker(currentPos)
-
-        .addTo(map)
-
-        .bindPopup('Your Location');
-
-      map.setView(currentPos, 13);
-
-    },
-
-    function(error) {
-
-      alert(error.message);
-
-    },
-
-    {
-
-      enableHighAccuracy: true,
-
-      timeout: 15000
+        return;
 
     }
 
-  );
+    // Stop an old GPS watch before starting another one
+
+    if (locationWatchId !== null) {
+
+        navigator.geolocation.clearWatch(locationWatchId);
+
+    }
+
+    locationWatchId = navigator.geolocation.watchPosition(
+
+        function(position) {
+
+            const lat = position.coords.latitude;
+
+            const lon = position.coords.longitude;
+
+            currentPos = [lat, lon];
+
+            if (userMarker) {
+
+                // Move existing marker
+
+                userMarker.setLatLng(currentPos);
+
+            } else {
+
+                // Create marker the first time
+
+                userMarker = L.marker(currentPos)
+
+                    .addTo(map)
+
+                    .bindPopup('Your Location');
+
+                // Only center/zoom the map the first time
+
+                map.setView(currentPos, 15);
+
+            }
+
+        },
+
+        function(error) {
+
+            console.log('GPS error:', error);
+
+        },
+
+        {
+
+            enableHighAccuracy: true,
+
+            maximumAge: 5000,
+
+            timeout: 15000
+
+        }
+
+    );
 
 }
+
+
 
 /* --------------------
 

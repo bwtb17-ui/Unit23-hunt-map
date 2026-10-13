@@ -611,6 +611,24 @@ function locateUser() {
 
             currentPos = [lat, lon];
 
+          alert('GPS updated: ' + new Date().toLocaleTimeString());
+
+          console.log(
+
+    'GPS UPDATE:',
+
+    new Date().toLocaleTimeString(),
+
+    lat,
+
+    lon,
+
+    'Accuracy:',
+
+    position.coords.accuracy
+
+);
+
             if (userMarker) {
 
                 // Move existing marker

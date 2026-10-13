@@ -3,6 +3,7 @@
 <html>
 
 <head>
+<meta charset="UTF-8">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -176,7 +177,7 @@
 
 <div class="panel">
 
-  <button onclick="locateUser()">⌖ Find Me</button>
+  <button id="findMeButton" onclick="locateUser()">⌖ Find Me</button>
 
   <input
 
@@ -192,6 +193,7 @@
 
 </div>
 
+<div id="gpsStatus" role="status" aria-live="polite" style="padding:8px 10px;color:#f5f0df;font-size:14px;">GPS ready — tap Find Me. Version GPS-6.</div>
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -579,101 +581,112 @@ function loadCountyRoads() {
 -------------------- */
 
 let userMarker = null;
-
 let currentPos = null;
-  let locationWatchId = null;
+let locationWatchId = null;
+let locationTimer = null;
+let trackingEnabled = false;
+let requestPending = false;
+let centerOnNextFix = false;
+let lastFixTimestamp = 0;
+let gpsGeneration = 0;
 
-function locateUser() {
+const gpsOptions = { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 };
 
-    if (!navigator.geolocation) {
-
-        alert('GPS location is not supported on this device.');
-
-        return;
-
-    }
-
-    // Stop an old GPS watch before starting another one
-
-    if (locationWatchId !== null) {
-
-        navigator.geolocation.clearWatch(locationWatchId);
-
-    }
-
-    locationWatchId = navigator.geolocation.watchPosition(
-
-        function(position) {
-
-            const lat = position.coords.latitude;
-
-            const lon = position.coords.longitude;
-
-            currentPos = [lat, lon];
-
-
-
-          console.log(
-
-    'GPS UPDATE:',
-
-    new Date().toLocaleTimeString(),
-
-    lat,
-
-    lon,
-
-    'Accuracy:',
-
-    position.coords.accuracy
-
-);
-
-            if (userMarker) {
-
-                // Move existing marker
-
-                userMarker.setLatLng(currentPos);
-
-            } else {
-
-                // Create marker the first time
-
-                userMarker = L.marker(currentPos)
-
-                    .addTo(map)
-
-                    .bindPopup('Your Location');
-
-                // Only center/zoom the map the first time
-
-                map.setView(currentPos, 15);
-
-            }
-
-        },
-
-        function(error) {
-
-            console.log('GPS error:', error);
-
-        },
-
-        {
-
-            enableHighAccuracy: true,
-
-            maximumAge: 5000,
-
-            timeout: 15000
-
-        }
-
-    );
-
+function setGpsStatus(message) {
+    document.getElementById('gpsStatus').textContent = message;
 }
 
+function updateGpsPosition(position) {
+    if (position.timestamp && position.timestamp < lastFixTimestamp) return;
+    lastFixTimestamp = position.timestamp || Date.now();
+    currentPos = [position.coords.latitude, position.coords.longitude];
+    if (userMarker) {
+        userMarker.setLatLng(currentPos);
+    } else {
+        userMarker = L.marker(currentPos).addTo(map).bindPopup('Your Location');
+    }
+    if (centerOnNextFix) {
+        map.setView(currentPos, 15);
+        centerOnNextFix = false;
+    }
+    setGpsStatus('GPS-6 tracking • Updated ' + new Date(lastFixTimestamp).toLocaleTimeString() +
+        ' • Accuracy ±' + Math.round(position.coords.accuracy) + ' m');
+}
 
+function handleGpsError(error) {
+    if (error.code === 1) {
+        trackingEnabled = false;
+        stopGpsRequests();
+        setGpsStatus('Location blocked. Allow location for this website in Safari, then tap Find Me.');
+    } else if (error.code === 2) {
+        setGpsStatus('GPS unavailable. Move to an open area; tracking will keep trying.');
+    } else {
+        setGpsStatus('Waiting for a fresh GPS position; tracking will keep trying.');
+    }
+}
+
+function requestGpsPosition() {
+    if (!trackingEnabled || document.hidden || requestPending) return;
+    requestPending = true;
+    const generation = gpsGeneration;
+    navigator.geolocation.getCurrentPosition(function(position) {
+        if (generation !== gpsGeneration) return;
+        requestPending = false;
+        updateGpsPosition(position);
+    }, function(error) {
+        if (generation !== gpsGeneration) return;
+        requestPending = false;
+        handleGpsError(error);
+    }, gpsOptions);
+}
+
+function stopGpsRequests() {
+    gpsGeneration++;
+    if (locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = null;
+    if (locationTimer !== null) clearInterval(locationTimer);
+    locationTimer = null;
+    requestPending = false;
+}
+
+function startGpsRequests() {
+    stopGpsRequests();
+    if (!trackingEnabled || document.hidden) return;
+    const generation = gpsGeneration;
+    locationWatchId = navigator.geolocation.watchPosition(function(position) {
+        if (generation === gpsGeneration) updateGpsPosition(position);
+    }, function(error) {
+        if (generation === gpsGeneration) handleGpsError(error);
+    }, gpsOptions);
+    requestGpsPosition();
+    locationTimer = setInterval(requestGpsPosition, 10000);
+}
+
+function locateUser() {
+    if (!navigator.geolocation) {
+        setGpsStatus('GPS location is not supported on this device.');
+        return;
+    }
+    if (!window.isSecureContext) {
+        setGpsStatus('Location needs HTTPS. Open the published GitHub Pages website.');
+        return;
+    }
+    centerOnNextFix = true;
+    trackingEnabled = true;
+    setGpsStatus('GPS-6: Finding your location…');
+    startGpsRequests();
+}
+
+// Pause when hidden and resume when the screen returns to this app.
+document.addEventListener('visibilitychange', function() {
+    if (!trackingEnabled) return;
+    if (document.hidden) stopGpsRequests();
+    else startGpsRequests();
+});
+window.addEventListener('pagehide', stopGpsRequests);
+window.addEventListener('pageshow', function() {
+    if (trackingEnabled) startGpsRequests();
+});
 
 /* --------------------
 
